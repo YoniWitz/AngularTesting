@@ -4,6 +4,7 @@ import { By } from "@angular/platform-browser";
 import { of } from "rxjs";
 import { Hero } from "../hero";
 import { HeroService } from "../hero.service";
+import { HeroComponent } from "../hero/hero.component";
 import { HeroesComponent } from "./heroes.component"
 
 describe('Heroes Component', () => {
@@ -24,9 +25,9 @@ describe('Heroes Component', () => {
         mockHeroService = jasmine.createSpyObj(['getHeroes', 'addHero', 'deleteHero']);
 
         TestBed.configureTestingModule({
-            declarations: [HeroesComponent, mockHeroComponent],
+            declarations: [HeroesComponent, HeroComponent],
             providers: [{ provide: HeroService, useValue: mockHeroService }],
-            //schemas: [NO_ERRORS_SCHEMA]
+            schemas: [NO_ERRORS_SCHEMA]
         })
 
         fixture = TestBed.createComponent(HeroesComponent);
@@ -84,5 +85,21 @@ describe('Heroes Component', () => {
 
          //assert
          expect(fixture.debugElement.queryAll(By.css('li')).length).toBe(3);
+    })
+
+    it('should render each hero as a HeroComponent', () => {
+        //arrange
+        heroesComponent.heroes = Heroes;
+        mockHeroService.getHeroes.and.returnValue(of(Heroes));
+       
+
+        //act 
+        fixture.detectChanges();
+
+        //assert
+        const des = fixture.debugElement.queryAll(By.directive(HeroComponent));
+        expect(des.length).toBe(3);
+        let i =0;
+        des.forEach(de => expect(de.componentInstance.hero).toEqual(Heroes[i++]));
     })
 })
