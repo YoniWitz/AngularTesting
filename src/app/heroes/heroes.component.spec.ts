@@ -1,4 +1,4 @@
-import { Component, Input, NO_ERRORS_SCHEMA } from "@angular/core";
+import { Component, Directive, Input, NO_ERRORS_SCHEMA } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 import { of } from "rxjs";
@@ -6,6 +6,19 @@ import { Hero } from "../hero";
 import { HeroService } from "../hero.service";
 import { HeroComponent } from "../hero/hero.component";
 import { HeroesComponent } from "./heroes.component"
+
+@Directive({
+    selector: '[routerLink]',
+    host: { '(click)': 'onClick()' }
+})
+export class RouterLinkDirectiveStub {
+    @Input('routerLink') linkParams: any;
+    navigatedTo: any = null;
+
+    onClick() {
+        this.navigatedTo = this.linkParams
+    }
+}
 
 describe('Heroes Component', () => {
     let heroesComponent: HeroesComponent;
@@ -25,9 +38,9 @@ describe('Heroes Component', () => {
         mockHeroService = jasmine.createSpyObj(['getHeroes', 'addHero', 'deleteHero']);
 
         TestBed.configureTestingModule({
-            declarations: [HeroesComponent, HeroComponent],
+            declarations: [HeroesComponent, HeroComponent, RouterLinkDirectiveStub],
             providers: [{ provide: HeroService, useValue: mockHeroService }],
-            schemas: [NO_ERRORS_SCHEMA]
+            //schemas: [NO_ERRORS_SCHEMA]
         })
 
         fixture = TestBed.createComponent(HeroesComponent);
@@ -136,6 +149,19 @@ describe('Heroes Component', () => {
         const heroText = fixture.debugElement.query(By.css('ul')).nativeElement.textContent;
         console.log(heroText);
         expect(heroText).toContain(name);
+    })
 
+    it('should have the correct route for the first hero', () => {
+        //arrange
+        mockHeroService.getHeroes.and.returnValue(of(Heroes));
+
+        //act
+        fixture.detectChanges();
+        const heroComponents = fixture.debugElement.queryAll(By.directive(HeroComponent));
+        let routerLink = heroComponents[0].query(By.directive(RouterLinkDirectiveStub)).injector.get(RouterLinkDirectiveStub);
+        heroComponents[0].query(By.css('a')).triggerEventHandler('click', null);
+
+        //assert
+        expect(routerLink.navigatedTo).toBe('/detail/1');
     })
 })
