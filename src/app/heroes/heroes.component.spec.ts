@@ -12,13 +12,13 @@ describe('Heroes Component', () => {
     let mockHeroService: any;
     let Heroes: Hero[];
     let fixture: ComponentFixture<HeroesComponent>;
-    
+
     @Component({
-        selector:'app-hero',
-        template:'<div></div>'
+        selector: 'app-hero',
+        template: '<div></div>'
     })
-    class mockHeroComponent{
-        @Input() hero:Hero;
+    class mockHeroComponent {
+        @Input() hero: Hero;
     }
 
     beforeEach(() => {
@@ -77,14 +77,14 @@ describe('Heroes Component', () => {
     })
 
     it('should create one li for each hero', () => {
-         //arrange
-         mockHeroService.getHeroes.and.returnValue(of(Heroes));
+        //arrange
+        mockHeroService.getHeroes.and.returnValue(of(Heroes));
 
-         //act 
-         fixture.detectChanges();
+        //act 
+        fixture.detectChanges();
 
-         //assert
-         expect(fixture.debugElement.queryAll(By.css('li')).length).toBe(3);
+        //assert
+        expect(fixture.debugElement.queryAll(By.css('li')).length).toBe(3);
     })
 
     it('should render each hero as a HeroComponent', () => {
@@ -98,22 +98,44 @@ describe('Heroes Component', () => {
         //assert
         const des = fixture.debugElement.queryAll(By.directive(HeroComponent));
         expect(des.length).toBe(3);
-        let i =0;
+        let i = 0;
         des.forEach(de => expect(de.componentInstance.hero).toEqual(Heroes[i++]));
     });
 
-    it(`should call hero Service.deleteHero when the hero component's delete button is clicked`,  () => {
+    it(`should call hero Service.deleteHero when the hero component's delete button is clicked`, () => {
         //arrange
         mockHeroService.getHeroes.and.returnValue(of(Heroes));
         fixture.detectChanges();
         spyOn(fixture.componentInstance, 'delete');
         const heroComponents = fixture.debugElement.queryAll(By.directive(HeroComponent));
-        
+
         //act
         //heroComponents[0].query(By.css('button')).triggerEventHandler('click', {stopPropagation: () => {}});
         //heroComponents[0].componentInstance.delete.emit(undefined);
         heroComponents[0].triggerEventHandler('delete', null);
         //assert
         expect(fixture.componentInstance.delete).toHaveBeenCalledWith(Heroes[0]);
+    })
+
+    it('should add new hero to the hero list when the add button is clicked', () => {
+        //arrange
+        let name = "Mr. Ice";
+        mockHeroService.getHeroes.and.returnValue(of(Heroes));
+        fixture.detectChanges();
+        mockHeroService.addHero.and.returnValue(of({ id: 5, name: name, strength: 4 }));
+
+        const addButton = fixture.debugElement.query(By.css('button'));
+        const inputElement = fixture.debugElement.query(By.css('input')).nativeElement;
+        inputElement.value = name;
+
+        //act
+        addButton.triggerEventHandler('click', null);
+        fixture.detectChanges();
+
+        //assert
+        const heroText = fixture.debugElement.query(By.css('ul')).nativeElement.textContent;
+        console.log(heroText);
+        expect(heroText).toContain(name);
+
     })
 })
