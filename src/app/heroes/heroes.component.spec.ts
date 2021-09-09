@@ -91,7 +91,6 @@ describe('Heroes Component', () => {
         //arrange
         heroesComponent.heroes = Heroes;
         mockHeroService.getHeroes.and.returnValue(of(Heroes));
-       
 
         //act 
         fixture.detectChanges();
@@ -101,5 +100,19 @@ describe('Heroes Component', () => {
         expect(des.length).toBe(3);
         let i =0;
         des.forEach(de => expect(de.componentInstance.hero).toEqual(Heroes[i++]));
+    });
+
+    it(`should call hero Service.deleteHero when the hero component's delete button is clicked`,  () => {
+        //arrange
+        mockHeroService.getHeroes.and.returnValue(of(Heroes));
+        fixture.detectChanges();
+        spyOn(fixture.componentInstance, 'delete');
+        const heroComponents = fixture.debugElement.queryAll(By.directive(HeroComponent));
+        
+        //act
+        //heroComponents[0].query(By.css('button')).triggerEventHandler('click', {stopPropagation: () => {}});
+        heroComponents[0].componentInstance.delete.emit(undefined);
+        //assert
+        expect(fixture.componentInstance.delete).toHaveBeenCalledWith(Heroes[0]);
     })
 })
